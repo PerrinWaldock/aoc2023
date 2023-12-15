@@ -4,7 +4,7 @@ from collections import deque, OrderedDict
 from functools import cache
 from copy import copy
 
-VERBOSE = True
+VERBOSE = False
 
 datafile = "input.txt"
 #datafile = "sample.txt" #21
@@ -57,7 +57,6 @@ for ind, box in enumerate(boxes):
 	for jnd, (lens, fl) in enumerate(box.items()):
 		focalpower += (ind+1)*(jnd+1)*fl
 print(focalpower)
-
 
 """
 answers:
