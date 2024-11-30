@@ -31,12 +31,7 @@ miny = 0
 maxy, maxx = tuple(np.shape(grid))#tuple(np.shape(grid) + np.array((1,1)))
 
 #shortcut key should be the first square after an intersection, value should be the intersection it leads to and a set of the squares it took to reach that point
-#TODO should only store intersections in the set + increment a step counter to improve space efficiency
 shortcuts = {}
-
-"""
-TODO something is wrong around 109,111 -- appears to be a self-intersection
-"""
 
 #START should be the FIRST square after the intersection
 class Path:
@@ -106,20 +101,33 @@ class Path:
 	
 	def __repr__(self) -> str:
 		return f"{self.loc} {self.past}"
-	
+
+testpath = Path((-1,-1))	
+intersections = 0
+for x in range(minx, maxx):
+	for y in range(miny, maxy):
+		testpath.loc = (y,x)
+		if grid[x,y] != "#" and len(testpath.validnext()) > 2:
+			print(x,y)
+			intersections += len(testpath.validnext()) - 2
+print(intersections)
+
+import time
+time.sleep(10)
 
 activepaths = deque([Path((0,1))])
-finishedpaths = deque()
-
-
+numfinished = 0
+bestpath = None
 currentbest = 0
+
 while len(activepaths):
 	path = activepaths.pop()
 
 	if path.isfinished():
-		finishedpaths.append(path)
+		numfinished += 1
 		pl = path.pathlen()
 		if pl > currentbest:
+			bestpath = path
 			currentbest = pl
 		continue
 
@@ -140,13 +148,8 @@ while len(activepaths):
 				activepaths.append(newpath)
 			except:
 				continue #shortcut to invalid branch
-	print(len(activepaths), len(finishedpaths), currentbest)
+	print(f"{len(activepaths)} {numfinished} {currentbest} {len(shortcuts)}/{intersections}")
 
-finishedpaths = list(finishedpaths)
-finishedpaths.sort(key=lambda fp: fp.pathlen())
-pathlens = [fp.pathlen() for fp in finishedpaths] 
-#TODO could make more efficient by skipping unneccesary checks, etc
-#TODO should look up travelling salesman problem to see if it can reduce some branches
 """
 ways to make more efficient
 	DONE go depth, not breadth first
@@ -158,22 +161,23 @@ ways to make more efficient
 			if step is on table, 
 """
 
-for pl in pathlens:
-	print(pl)
-print(max(pathlens), currentbest)
 # for start, shortset in shortcuts.items():
 # 	print(f"{start}: {shortset}\n")
 
-lp = finishedpaths[-1]
+lp = bestpath
 for pt in lp.past:
 	pathgrid[pt[0]][pt[1]] = "O"
 
 np.savetxt("pathgrid.txt", pathgrid, fmt="%s", delimiter="")
 np.savetxt("pathgrid.txt", pathgrid, fmt="%s", delimiter="")
 
+print(currentbest)
+
 
 """
 4634 is too low
 7337 is too high
 6402 is wrong
+4635 is wrong
+6406 is correct
 """
